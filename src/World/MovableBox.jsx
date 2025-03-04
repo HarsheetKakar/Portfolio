@@ -1,25 +1,12 @@
 // MovableBoxOnGlobe.jsx
 import React, {
-    useEffect,
-    useRef,
-    useContext,
     forwardRef,
+    useContext,
     useImperativeHandle,
     useState,
 } from 'react';
-import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import GlobeContext from './context/GlobeContext'; // Adjust the import path as needed
-import {
-    moveForward,
-    moveBackwardLeft,
-    moveBackwardRight,
-    moveBackwards,
-    moveRight,
-    moveLeft,
-    moveForwardLeft,
-    moveForwardRight,
-} from './utils/moveOnSphere';
+import GlobeContext from './context/GlobeContext';
 
 const MovableBoxOnGlobe = forwardRef(function (
     {
@@ -36,7 +23,10 @@ const MovableBoxOnGlobe = forwardRef(function (
     },
     ref,
 ) {
-    const [spherical, setSpherical] = useState(new THREE.Spherical(5, 0, 0));
+    const context = useContext(GlobeContext);
+    const [spherical, setSpherical] = useState(
+        new THREE.Spherical(context.radius, 0, 0),
+    );
 
     useImperativeHandle(
         ref,
