@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { PointerLockControls } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import Globe from './World/Globe';
 import MovableBoxOnGlobe from './World/MovableBox.jsx';
+import Moveable from './World/Moveable.hoc.jsx';
 
 // Component that moves a box along the surface of a sphere using WASD keys.
 
@@ -18,11 +19,15 @@ function App() {
             <pointLight position={[10, 10, 10]} />
             <Globe radius={10}>
                 {/* Movable box on the sphere (using WASD) */}
-                <MovableBoxOnGlobe movementSpeed={0.1} boxSize={1} />
+
+                <Moveable>
+                    {/*TODO: Make changes on poles so that it can cross the pole*/}
+                    <MovableBoxOnGlobe />
+                </Moveable>
             </Globe>
 
             {/* PointerLockControls for camera look */}
-            <PointerLockControls />
+            <OrbitControls />
         </Canvas>
     );
 }
