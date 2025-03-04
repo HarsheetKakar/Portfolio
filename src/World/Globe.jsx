@@ -4,6 +4,7 @@ import * as Three from 'three';
 
 export default function Globe({ radius, children }) {
     const center = new Three.Vector3(0, 0, 0);
+    console.log('Radius of globe', radius);
     return (
         <group>
             <mesh>
