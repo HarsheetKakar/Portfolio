@@ -4,7 +4,8 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import Globe from './World/Globe';
 import MovableBoxOnGlobe from './World/MovableBox.jsx';
-import Moveable from './World/Moveable.hoc.jsx';
+import Moveable from './World/hoc/Moveable.hoc.jsx';
+import Person from './World/Person';
 
 // Component that moves a box along the surface of a sphere using WASD keys.
 
@@ -22,7 +23,7 @@ function App() {
 
                 <Moveable>
                     {/*TODO: Make changes on poles so that it can cross the pole*/}
-                    <MovableBoxOnGlobe />
+                    <Person />
                 </Moveable>
             </Globe>
 
