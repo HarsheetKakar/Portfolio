@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { PointerLockControls } from '@react-three/drei';
 import * as THREE from 'three';
+import Globe from './World/Globe';
 
 // Component that moves a box along the surface of a sphere using WASD keys.
 function MovableBoxOnGlobe({
@@ -106,12 +107,7 @@ function App() {
             {/* Lighting */}
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
-
-            {/* Sphere world */}
-            <mesh>
-                <sphereGeometry args={[5, 32, 32]} />
-                <meshStandardMaterial color="hotpink" wireframe />
-            </mesh>
+            <Globe />
 
             {/* Movable box on the sphere (using WASD) */}
             <MovableBoxOnGlobe
