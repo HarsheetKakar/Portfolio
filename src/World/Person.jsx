@@ -18,7 +18,7 @@ const Person = forwardRef(function ({}, ref) {
     const { camera, gl } = useThree();
     const context = useContext(GlobeContext);
     const [spherical, setSpherical] = useState(
-        new THREE.Spherical(context.radius + 0.2, Math.PI / 2, 0).makeSafe(), // puts the person on the equator of the sphere
+        new THREE.Spherical(context.radius + 0.8, Math.PI / 2, 0).makeSafe(), // puts the person on the equator of the sphere
     );
     // Create a ref for the PointerLockControls instance.
     const controlsRef = useRef({});
@@ -85,7 +85,6 @@ const Person = forwardRef(function ({}, ref) {
                 if (controlsRef.current) {
                     const direction = new THREE.Vector3();
                     controlsRef.current.getDirection(direction);
-                    console.log('direction:', direction);
                     return direction;
                 }
                 return new THREE.Vector3();
