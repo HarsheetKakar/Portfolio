@@ -2,30 +2,12 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import GlobeContext from '../context/GlobeContext.jsx'; // Provides the sphere's radius (and center, if needed)
-
-/**
- * Adjusts a given spherical coordinate by adding angular offsets derived
- * from a direction vector.
- *
- * @param {THREE.Spherical} currentSpherical - The current spherical coordinate (radius, phi, theta).
- * @param {THREE.Vector3} direction - The forward direction vector (should be normalized).
- * @param {number} speed - A multiplier to scale the angular change.
- * @returns {THREE.Spherical} - A new spherical coordinate updated by the direction.
- */
-function adjustSphericalByDirection(currentSpherical, direction, speed = 0.05) {
-    // Convert the direction vector to spherical angles.
-    const offsetSpherical = new THREE.Spherical().setFromVector3(direction);
-    // The spherical angles from a direction vector are used as increments.
-    // Note: Depending on your coordinate system and what you consider "forward,"
-    // you may want to invert one of these values.
-    const newPhi = currentSpherical.phi + offsetSpherical.phi * speed;
-    const newTheta = currentSpherical.theta + offsetSpherical.theta * speed;
-
-    // Optionally, clamp newPhi to a valid range [0, Math.PI] to avoid flipping.
-    const clampedPhi = Math.max(0, Math.min(Math.PI, newPhi));
-
-    return new THREE.Spherical(currentSpherical.radius, clampedPhi, newTheta);
-}
+import moveOnSphere from '../utils/moveOnSphere.js';
+import {
+    getDownVector,
+    getRightVector,
+    getLeftVector,
+} from '../utils/direction.js';
 
 const Moveable = ({ children }) => {
     const boxRef = useRef(null);
@@ -42,41 +24,56 @@ const Moveable = ({ children }) => {
         let newPhi = currentSpherical.phi;
         let newTheta = currentSpherical.theta;
 
+        let newSpherical;
         switch (event.key) {
             case 'ArrowUp':
-                // Decrease phi (but keep it ≥ 0)
-                const spherical = adjustSphericalByDirection(
+                newSpherical = moveOnSphere(
                     currentSpherical,
                     direction,
                     deltaAngle,
                 );
-                radius = spherical.radius;
-                newPhi = spherical.phi;
-                newTheta = spherical.theta;
                 break;
             case 'ArrowDown':
                 // Increase phi (but keep it ≤ PI)
-                newPhi = Math.min(currentSpherical.phi + deltaAngle, Math.PI);
+                const downVector = getDownVector(direction);
+                newSpherical = moveOnSphere(
+                    currentSpherical,
+                    downVector,
+                    deltaAngle,
+                );
                 break;
             case 'ArrowLeft':
                 // Decrease theta (wrap-around can be handled if needed)
-                newTheta = currentSpherical.theta - deltaAngle;
+                const leftVector = getLeftVector(currentSpherical, direction);
+                newSpherical = moveOnSphere(
+                    currentSpherical,
+                    leftVector,
+                    deltaAngle,
+                );
                 break;
             case 'ArrowRight':
                 // Increase theta
-                newTheta = currentSpherical.theta + deltaAngle;
+                const rightVector = getRightVector(currentSpherical, direction);
+                newSpherical = moveOnSphere(
+                    currentSpherical,
+                    rightVector,
+                    deltaAngle,
+                );
                 break;
             default:
                 break;
         }
 
+        if (newSpherical) {
+            newSpherical.radius = radius + 0.2; // COMMENT: making sure that the user is not allowed to go inside the globe
+            boxRef.current.updatePosition(newSpherical.makeSafe());
+        }
+
         console.log('newPhi', newPhi);
         console.log('newTheta', newTheta);
 
-        // Construct a new spherical coordinate with the globe's radius
-        const newSpherical = new THREE.Spherical(radius, newPhi, newTheta);
         // Update the Box's position
-        boxRef.current.updatePosition(newSpherical);
+        // Expose the child component's API to the parent using the forwarded ref.
     };
 
     useEffect(() => {
