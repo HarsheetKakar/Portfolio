@@ -1,14 +1,13 @@
 // Moveable.js
-import React, {
-    forwardRef,
-    useContext,
-    useEffect,
-    useImperativeHandle,
-    useRef,
-} from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import GlobeContext from '../context/GlobeContext.jsx'; // Provides the sphere's radius (and center, if needed)
 import moveOnSphere from '../utils/moveOnSphere.js';
+import {
+    getDownVector,
+    getRightVector,
+    getLeftVector,
+} from '../utils/direction.js';
 
 const Moveable = ({ children }) => {
     const boxRef = useRef(null);
@@ -25,6 +24,7 @@ const Moveable = ({ children }) => {
         let newPhi = currentSpherical.phi;
         let newTheta = currentSpherical.theta;
 
+        let newSpherical;
         switch (event.key) {
             case 'ArrowUp':
                 // Decrease phi (but keep it ≥ 0)
@@ -36,27 +36,41 @@ const Moveable = ({ children }) => {
                 //radius = spherical.radius;
                 //newPhi = spherical.phi;
                 //newTheta = spherical.theta;
-                const newSpherical = moveOnSphere(
+                newSpherical = moveOnSphere(
                     currentSpherical,
                     direction,
                     deltaAngle,
                 );
-                newPhi = newSpherical.phi;
-                newTheta = newSpherical.theta;
-                console.log('current spherical', currentSpherical);
-                console.log('newSpherical spherical', newSpherical);
+                boxRef.current.updatePosition(newSpherical.makeSafe());
                 break;
             case 'ArrowDown':
                 // Increase phi (but keep it ≤ PI)
-                newPhi = Math.min(currentSpherical.phi + deltaAngle, Math.PI);
+                const downVector = getDownVector(direction);
+                newSpherical = moveOnSphere(
+                    currentSpherical,
+                    downVector,
+                    deltaAngle,
+                );
+                boxRef.current.updatePosition(newSpherical.makeSafe());
                 break;
             case 'ArrowLeft':
                 // Decrease theta (wrap-around can be handled if needed)
-                newTheta = currentSpherical.theta - deltaAngle;
+                const leftVector = getLeftVector(currentSpherical, direction);
+                newSpherical = moveOnSphere(
+                    currentSpherical,
+                    leftVector,
+                    deltaAngle,
+                );
                 break;
             case 'ArrowRight':
                 // Increase theta
-                newTheta = currentSpherical.theta + deltaAngle;
+                const rightVector = getRightVector(currentSpherical, direction);
+                newSpherical = moveOnSphere(
+                    currentSpherical,
+                    rightVector,
+                    deltaAngle,
+                );
+                boxRef.current.updatePosition(newSpherical.makeSafe());
                 break;
             default:
                 break;
@@ -65,10 +79,7 @@ const Moveable = ({ children }) => {
         console.log('newPhi', newPhi);
         console.log('newTheta', newTheta);
 
-        // Construct a new spherical coordinate with the globe's radius
-        const newSpherical = new THREE.Spherical(radius, newPhi, newTheta);
         // Update the Box's position
-        boxRef.current.updatePosition(newSpherical);
         // Expose the child component's API to the parent using the forwarded ref.
     };
 

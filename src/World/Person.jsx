@@ -19,7 +19,7 @@ const Person = forwardRef(function ({}, ref) {
     const { camera } = useThree();
     const context = useContext(GlobeContext);
     const [spherical, setSpherical] = useState(
-        new THREE.Spherical(context.radius, Math.PI / 2, 0).makeSafe(), // COMMENT: puts the person on equater of the sphere
+        new THREE.Spherical(context.radius + 2, Math.PI / 2, 0).makeSafe(), // COMMENT: puts the person on equater of the sphere
     );
     // New state to store rotation angles (yaw and pitch)
     const [rotation, setRotation] = useState({ yaw: 0, pitch: 0 });
