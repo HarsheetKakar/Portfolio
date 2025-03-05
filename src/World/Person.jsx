@@ -1,70 +1,77 @@
 /**
- * This is user component which gives first person controls to the user
- * */
-
-import {
+ * This is a user component which gives first person controls to the user.
+ */
+import React, {
     forwardRef,
     useContext,
     useState,
     useImperativeHandle,
     useEffect,
+    useRef,
 } from 'react';
 import GlobeContext from './context/GlobeContext';
-import React from 'react';
-
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 
 const Person = forwardRef(function ({}, ref) {
-    const { camera } = useThree();
+    const { camera, gl } = useThree();
     const context = useContext(GlobeContext);
     const [spherical, setSpherical] = useState(
-        new THREE.Spherical(context.radius + 2, Math.PI / 2, 0).makeSafe(), // COMMENT: puts the person on equater of the sphere
+        new THREE.Spherical(context.radius + 0.2, Math.PI / 2, 0).makeSafe(), // puts the person on the equator of the sphere
     );
-    // New state to store rotation angles (yaw and pitch)
-    const [rotation, setRotation] = useState({ yaw: 0, pitch: 0 });
-    let direction = new THREE.Vector3(0, 0, 0).normalize();
+    // Create a ref for the PointerLockControls instance.
+    const controlsRef = useRef({});
 
     useEffect(() => {
-        const sensitivity = 0.02; // Adjust this value to change mouse sensitivity
+        // Instantiate PointerLockControls with the camera and the canvas (gl.domElement)
+        controlsRef.current = new PointerLockControls(camera, gl.domElement);
 
-        const handleMouseMove = (event) => {
-            // event.movementX and event.movementY give the change in mouse position
-            setRotation((prev) => {
-                let newYaw = prev.yaw - event.movementX * sensitivity;
-                let newPitch = prev.pitch - event.movementY * sensitivity;
-                // Clamp the pitch to avoid flipping the view.
-                newPitch = Math.max(
-                    -Math.PI / 2,
-                    Math.min(Math.PI / 2, newPitch),
-                );
-                return { yaw: newYaw, pitch: newPitch };
-            });
+        // On click, request pointer lock so that the user has a first-person feel.
+        const handleClick = () => {
+            controlsRef.current.lock();
         };
+        gl.domElement.addEventListener('click', handleClick);
 
-        // Optional: If you want to use pointer lock for a first-person feel,
-        // you might request pointer lock on the canvas element.
-        window.addEventListener('mousemove', handleMouseMove);
+        // Optionally, log pointer lock events.
+        const onLock = () => {
+            console.log('Pointer locked');
+        };
+        const onUnlock = () => {
+            console.log('Pointer unlocked');
+        };
+        controlsRef.current.addEventListener('lock', onLock);
+        controlsRef.current.addEventListener('unlock', onUnlock);
+
         return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
+            gl.domElement.removeEventListener('click', handleClick);
+            controlsRef.current.removeEventListener('lock', onLock);
+            controlsRef.current.removeEventListener('unlock', onUnlock);
+            controlsRef.current.unlock();
         };
-    }, []);
+    }, [camera, gl.domElement]);
 
-    // Each frame update the camera's look direction based on the rotation state.
+    // Each frame update the camera's position based on the spherical state.
+    // The PointerLockControls automatically handle the camera's rotation.
     useFrame(() => {
-        // Calculate the forward direction vector from yaw and pitch.
-        direction = new THREE.Vector3(
-            Math.cos(rotation.pitch) * Math.sin(rotation.yaw),
-            Math.sin(rotation.pitch),
-            Math.cos(rotation.pitch) * Math.cos(rotation.yaw),
-        ).normalize();
-        //console.log('direction', direction);
-        // Update the camera's orientation to look in the new direction.
-        camera.lookAt(camera.position.clone().add(direction));
-        const position = new THREE.Vector3()
-            .setFromSpherical(spherical.makeSafe())
-            .add(direction);
-        camera.position.copy(position);
+        // Update camera position from spherical coordinates
+        const pos = new THREE.Vector3().setFromSpherical(spherical.makeSafe());
+        camera.position.copy(pos);
+
+        // Compute the new up vector as the normal from the sphere's center
+        const newUp = pos.clone().sub(context.center).normalize();
+        camera.up.copy(newUp);
+
+        // Get the current forward direction from the controls.
+        const forward = new THREE.Vector3();
+        controlsRef.current.getDirection(forward);
+        // Remove any vertical component so that the forward vector becomes tangent.
+        const tangentForward = forward
+            .sub(newUp.clone().multiplyScalar(forward.dot(newUp)))
+            .normalize();
+
+        // Reorient the camera to look along the corrected tangent direction.
+        camera.lookAt(camera.position.clone().add(tangentForward));
     });
 
     useImperativeHandle(
@@ -74,10 +81,19 @@ const Person = forwardRef(function ({}, ref) {
             updatePosition: (newSpherical) => {
                 setSpherical(newSpherical.makeSafe());
             },
-            getDirection: () => direction,
+            getDirection: () => {
+                if (controlsRef.current) {
+                    const direction = new THREE.Vector3();
+                    controlsRef.current.getDirection(direction);
+                    console.log('direction:', direction);
+                    return direction;
+                }
+                return new THREE.Vector3();
+            },
         }),
-        [spherical, direction],
+        [spherical],
     );
+
     return null;
 });
 

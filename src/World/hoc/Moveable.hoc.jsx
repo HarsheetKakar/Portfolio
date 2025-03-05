@@ -27,21 +27,11 @@ const Moveable = ({ children }) => {
         let newSpherical;
         switch (event.key) {
             case 'ArrowUp':
-                // Decrease phi (but keep it ≥ 0)
-                //const spherical = adjustSphericalByDirection(
-                //    currentSpherical,
-                //    direction,
-                //    deltaAngle,
-                //);
-                //radius = spherical.radius;
-                //newPhi = spherical.phi;
-                //newTheta = spherical.theta;
                 newSpherical = moveOnSphere(
                     currentSpherical,
                     direction,
                     deltaAngle,
                 );
-                boxRef.current.updatePosition(newSpherical.makeSafe());
                 break;
             case 'ArrowDown':
                 // Increase phi (but keep it ≤ PI)
@@ -51,7 +41,6 @@ const Moveable = ({ children }) => {
                     downVector,
                     deltaAngle,
                 );
-                boxRef.current.updatePosition(newSpherical.makeSafe());
                 break;
             case 'ArrowLeft':
                 // Decrease theta (wrap-around can be handled if needed)
@@ -70,10 +59,14 @@ const Moveable = ({ children }) => {
                     rightVector,
                     deltaAngle,
                 );
-                boxRef.current.updatePosition(newSpherical.makeSafe());
                 break;
             default:
                 break;
+        }
+
+        if (newSpherical) {
+            newSpherical.radius = radius + 0.2; // COMMENT: making sure that the user is not allowed to go inside the globe
+            boxRef.current.updatePosition(newSpherical.makeSafe());
         }
 
         console.log('newPhi', newPhi);

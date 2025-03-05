@@ -1,12 +1,8 @@
-import React, { useEffect, useRef } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useRef } from 'react';
+import { Canvas } from '@react-three/fiber';
 import Globe from './World/Globe';
-import MovableBoxOnGlobe from './World/MovableBox.jsx';
 import Moveable from './World/hoc/Moveable.hoc.jsx';
 import Person from './World/Person';
-import MovableStats from './debug/StatsComponentForMoveable';
 
 // Component that moves a box along the surface of a sphere using WASD keys.
 
@@ -30,7 +26,6 @@ function App() {
             </Globe>
 
             {/*<MovableStats movableRef={moveAbleRef} />*/}
-            <OrbitControls />
         </Canvas>
     );
 }
