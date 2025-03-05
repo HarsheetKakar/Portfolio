@@ -6,10 +6,12 @@ import Globe from './World/Globe';
 import MovableBoxOnGlobe from './World/MovableBox.jsx';
 import Moveable from './World/hoc/Moveable.hoc.jsx';
 import Person from './World/Person';
+import MovableStats from './debug/StatsComponentForMoveable';
 
 // Component that moves a box along the surface of a sphere using WASD keys.
 
 function App() {
+    const moveAbleRef = useRef({}); // TODO: use it to see the stats in realtime
     return (
         <Canvas
             camera={{ position: [10, 10, 10], fov: 75, near: 0.1, far: 1000 }}
@@ -27,7 +29,7 @@ function App() {
                 </Moveable>
             </Globe>
 
-            {/* PointerLockControls for camera look */}
+            {/*<MovableStats movableRef={moveAbleRef} />*/}
             <OrbitControls />
         </Canvas>
     );

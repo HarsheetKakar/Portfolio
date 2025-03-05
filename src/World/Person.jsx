@@ -19,11 +19,11 @@ const Person = forwardRef(function ({}, ref) {
     const { camera } = useThree();
     const context = useContext(GlobeContext);
     const [spherical, setSpherical] = useState(
-        new THREE.Spherical(context.radius, Math.PI / 2, 0), // COMMENT: puts the person on equater of the sphere
+        new THREE.Spherical(context.radius, Math.PI / 2, 0).makeSafe(), // COMMENT: puts the person on equater of the sphere
     );
     // New state to store rotation angles (yaw and pitch)
     const [rotation, setRotation] = useState({ yaw: 0, pitch: 0 });
-    let direction = new THREE.Vector3(0, 0, 0);
+    let direction = new THREE.Vector3(0, 0, 0).normalize();
 
     useEffect(() => {
         const sensitivity = 0.02; // Adjust this value to change mouse sensitivity
@@ -57,12 +57,12 @@ const Person = forwardRef(function ({}, ref) {
             Math.cos(rotation.pitch) * Math.sin(rotation.yaw),
             Math.sin(rotation.pitch),
             Math.cos(rotation.pitch) * Math.cos(rotation.yaw),
-        );
-        console.log('direction', direction);
+        ).normalize();
+        //console.log('direction', direction);
         // Update the camera's orientation to look in the new direction.
         camera.lookAt(camera.position.clone().add(direction));
         const position = new THREE.Vector3()
-            .setFromSpherical(spherical)
+            .setFromSpherical(spherical.makeSafe())
             .add(direction);
         camera.position.copy(position);
     });
@@ -70,9 +70,9 @@ const Person = forwardRef(function ({}, ref) {
     useImperativeHandle(
         ref,
         () => ({
-            getSpherical: () => spherical,
+            getSpherical: () => spherical.makeSafe(),
             updatePosition: (newSpherical) => {
-                setSpherical(newSpherical);
+                setSpherical(newSpherical.makeSafe());
             },
             getDirection: () => direction,
         }),
