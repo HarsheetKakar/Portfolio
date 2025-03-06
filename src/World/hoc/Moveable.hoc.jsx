@@ -25,15 +25,15 @@ const Moveable = ({ children }) => {
         let newTheta = currentSpherical.theta;
 
         let newSpherical;
-        switch (event.key) {
-            case 'ArrowUp':
+        switch (event.key?.toLowerCase()) {
+            case 'w':
                 newSpherical = moveOnSphere(
                     currentSpherical,
                     direction,
                     deltaAngle,
                 );
                 break;
-            case 'ArrowDown':
+            case 's':
                 // Increase phi (but keep it ≤ PI)
                 const downVector = getDownVector(direction);
                 newSpherical = moveOnSphere(
@@ -42,7 +42,7 @@ const Moveable = ({ children }) => {
                     deltaAngle,
                 );
                 break;
-            case 'ArrowLeft':
+            case 'a':
                 // Decrease theta (wrap-around can be handled if needed)
                 const leftVector = getLeftVector(currentSpherical, direction);
                 newSpherical = moveOnSphere(
@@ -51,7 +51,7 @@ const Moveable = ({ children }) => {
                     deltaAngle,
                 );
                 break;
-            case 'ArrowRight':
+            case 'd':
                 // Increase theta
                 const rightVector = getRightVector(currentSpherical, direction);
                 newSpherical = moveOnSphere(
