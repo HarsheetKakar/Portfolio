@@ -65,15 +65,9 @@ const Moveable = ({ children }) => {
         }
 
         if (newSpherical) {
-            newSpherical.radius = radius + 0.2; // COMMENT: making sure that the user is not allowed to go inside the globe
+            newSpherical.radius = radius + 0.8; // COMMENT: making sure that the user is not allowed to go inside the globe
             boxRef.current.updatePosition(newSpherical.makeSafe());
         }
-
-        console.log('newPhi', newPhi);
-        console.log('newTheta', newTheta);
-
-        // Update the Box's position
-        // Expose the child component's API to the parent using the forwarded ref.
     };
 
     useEffect(() => {
