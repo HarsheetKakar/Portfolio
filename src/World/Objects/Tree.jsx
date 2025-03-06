@@ -22,25 +22,22 @@ const Tree = forwardRef(({}, ref) => {
         ).makeSafe(), // puts tree on the globe
     );
 
-    const [scale, setScale] = useState([0, 0, 0]);
+    const [scale, setScale] = useState([0.05, 0.05, 0.05]);
 
-    const position = new THREE.Vector3().setFromSpherical(spherical);
+    const [position, setPosition] = useState(
+        new THREE.Vector3().setFromSpherical(spherical),
+    );
     const [direction, setDirection] = useState(
         position.clone().sub(context.center).normalize(),
     );
-
-    useEffect(() => {
-        if (meshRef.current) {
-            meshRef.current.up.copy(direction);
-            meshRef.current.lookAt(position.clone().add(direction));
-        }
-    }, [direction, position]);
 
     useImperativeHandle(
         ref,
         () => ({
             getSpherical: () => spherical.makeSafe(),
             setSpherical: (newSpherical) => {
+                console.log(newSpherical);
+                setPosition(new THREE.Vector3().setFromSpherical(newSpherical));
                 setSpherical(newSpherical.makeSafe());
             },
             getScale: () => scale,
@@ -57,7 +54,7 @@ const Tree = forwardRef(({}, ref) => {
     );
     return (
         <mesh ref={meshRef} position={[position.x, position.y, position.z]}>
-            <primitive object={model.scene}></primitive>
+            <primitive object={model.scene} scale={scale}></primitive>
         </mesh>
     );
 });
