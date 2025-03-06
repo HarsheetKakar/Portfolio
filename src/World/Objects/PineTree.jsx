@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import { useGLTF } from '@react-three/drei';
 import GlobeContext from '../context/GlobeContext';
 
-const Tree = forwardRef(({}, ref) => {
+const PineTree = forwardRef(({}, ref) => {
     const meshRef = useRef({});
     const model = useGLTF('/models/pine_tree/scene.gltf');
     const context = useContext(GlobeContext);
@@ -76,4 +76,4 @@ const Tree = forwardRef(({}, ref) => {
     );
 });
 
-export default Tree;
+export default PineTree;
