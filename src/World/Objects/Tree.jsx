@@ -32,6 +32,7 @@ const Tree = forwardRef(({}, ref) => {
     );
 
     useImperativeHandle(
+        // TODO: add debug component for objects so that we can change its orientation
         ref,
         () => ({
             getSpherical: () => spherical.makeSafe(),
@@ -52,6 +53,22 @@ const Tree = forwardRef(({}, ref) => {
         }),
         [spherical, scale],
     );
+
+    useEffect(() => {
+        if (!meshRef.current) return;
+
+        // Recompute direction from center to current position
+        const outwardNormal = position.clone().sub(context.center).normalize();
+
+        // Create a quaternion that aligns the local up-axis (0,1,0) with outwardNormal
+        const up = new THREE.Vector3(0, 1, 0);
+        const quat = new THREE.Quaternion().setFromUnitVectors(
+            up,
+            outwardNormal,
+        );
+
+        meshRef.current.quaternion.copy(quat);
+    }, [position, context.center]);
     return (
         <mesh ref={meshRef} position={[position.x, position.y, position.z]}>
             <primitive object={model.scene} scale={scale}></primitive>
